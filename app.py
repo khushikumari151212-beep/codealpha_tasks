@@ -1,22 +1,44 @@
-from flask import Flask, render_template, request, jsonify
-from deep_translator import GoogleTranslator
+# Simple FAQ Chatbot
 
-app = Flask(__name__)
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+# FAQs (questions + answers)
+questions = [
+    "what is python",
+    "how are you",
+    "what is your name",
+    "what is machine learning",
+    "what is sql",
+    "what is cloud computing",
+    "what is operating system"
+]
 
-@app.route('/translate', methods=['POST'])
-def translate():
-    data = request.json
-    text = data['text']
-    src = data['source']
-    dest = data['target']
+answers = [
+    "Python is a programming language",
+    "I am fine",
+    "I am a chatbot"
+    "Machine learning is a part of AI that learns from data" 
+    "SQL is used to manage databases",
+    "Cloud computing means storing data online",
+    "Operating system controls computer"
+]
 
-    translated = GoogleTranslator(source=src, target=dest).translate(text)
+# Convert questions into vectors
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(questions)
 
-    return jsonify({'translated_text': translated})
+# Chatbot function
+def chatbot(user_input):
+    user_vec = vectorizer.transform([user_input])
+    similarity = cosine_similarity(user_vec, X)
+    index = similarity.argmax()
+    return answers[index]
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Run chatbot
+while True:
+    user = input("You: ")
+    if user == "exit":
+        print("Bot: Bye!")
+        break
+    print("Bot:", chatbot(user))
