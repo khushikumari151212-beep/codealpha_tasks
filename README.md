@@ -13,5 +13,5 @@ Developed a tool to translate text between different languages using translation
 2. Chatbot for FAQs  
 Built a chatbot that answers user queries by matching them with the most relevant FAQ using NLP techniques.
 
-3. Object Detection and Tracking  
+4. Object Detection and Tracking  
 Implemented a real-time object detection and tracking system using computer vision techniques to identify and track objects in video streams.
