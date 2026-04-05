@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Language Translator</title>
+  <style>
+    :root {
+      --bg1: #00c6ff;
+      --bg2: #0072ff;
+      --text: #ffffff;
+    }
+
+    body.dark {
+      --bg1: #141e30;
+      --bg2: #243b55;
+      --text: #00f7ff;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* Waterflow animated background */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, var(--bg1), var(--bg2), var(--bg1));
+      animation: flow 8s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes flow {
+      0% { transform: translate(-25%, -25%) rotate(0deg); }
+      100% { transform: translate(-25%, -25%) rotate(360deg); }
+    }
+
+    /* Card */
+    .card {
+      padding: 30px 60px;
+      font-size: 40px;
+      color: var(--text);
+      border-radius: 20px;
+
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.3);
+
+      /* Neon glow */
+      text-shadow:
+              0 0 5px #fff,
+              0 0 10px #0ff,
+              0 0 20px #0ff,
+              0 0 40px #0ff;
+
+      box-shadow: 0 0 25px rgba(0,255,255,0.6);
+
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+    }
+
+    /* Toggle Button */
+    .toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .card {
+      position: relative;
+      padding: 30px 60px;
+      font-size: 40px;
+      color: var(--text);
+      border-radius: 20px;
+
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.3);
+
+      text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+
+      box-shadow: 0 0 30px rgba(0,255,255,0.6);
+
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    /* Reflection */
+    .card::after {
+      content: "";
+      position: absolute;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: inherit;
+      transform: scaleY(-1);
+      opacity: 0.3;
+      filter: blur(5px);
+    }
+
+    /* Ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      background: rgba(255,255,255,0.6);
+      animation: rippleEffect 0.6s linear;
+    }
+
+    @keyframes rippleEffect {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* Toggle */
+    .toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
+
+    </head>
+<body>
+
+<h2>🌍 Language Translation Tool</h2>
+
+<textarea id="inputText" rows="5" cols="50" placeholder="Enter text"></textarea><br><br>
+
+<label>Source Language:</label>
+<select id="source">
+  <option value="en">English</option>
+  <option value="hi">Hindi</option>
+  <option value="fr">French</option>
+</select>
+
+<label>Target Language:</label>
+<select id="target">
+  <option value="hi">Hindi</option>
+  <option value="en">English</option>
+  <option value="fr">French</option>
+</select>
+
+<br><br>
+<button onclick="translateText()">Translate</button>
+
+<h3>Translated Text:</h3>
+<p id="output"></p>
+
+<button onclick="copyText()">Copy</button>
+
+<!-- Background Music -->
+<audio id="bgMusic" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Ripple Sound -->
+<audio id="clickSound">
+  <source src="https://www.soundjay.com/water/sounds/water-drop-1.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  function translateText() {
+    let text = document.getElementById("inputText").value;
+    let source = document.getElementById("source").value;
+    let target = document.getElementById("target").value;
+
+    fetch('/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, source, target })
+    })
+            .then(res => res.json())
+            .then(data => {
+              document.getElementById("output").innerText = data.translated_text;
+            });
+  }
+
+  function copyText() {
+    let text = document.getElementById("output").innerText;
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
+  }
+
+  // Start music on first click (browser restriction)
+  document.body.addEventListener("click", () => {
+    document.getElementById("bgMusic").play();
+  }, { once: true });
+
+  // Ripple + sound
+  const card = document.getElementById("card");
+
+  card.addEventListener("click", function(e) {
+    const ripple = document.createElement("span");
+    ripple.classList.add("ripple");
+
+    const rect = card.getBoundingClientRect();
+    ripple.style.left = e.clientX - rect.left + "px";
+    ripple.style.top = e.clientY - rect.top + "px";
+
+    card.appendChild(ripple);
+
+    document.getElementById("clickSound").currentTime = 0;
+    document.getElementById("clickSound").play();
+
+    setTimeout(() => ripple.remove(), 600);
+  });
+
+  // 3D Tilt Effect
+  card.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = -(y - centerY) / 10;
+    const rotateY = (x - centerX) / 10;
+
+    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  });
+
+  card.addEventListener("mouseleave", () => {
+    card.style.transform = "rotateX(0) rotateY(0)";
+  });
+
+</script>
+
+</body>
+</html>
